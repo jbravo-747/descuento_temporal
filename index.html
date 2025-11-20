@@ -331,30 +331,43 @@
     }
 
     /* RESPONSIVO */
-    @media (max-width: 720px) {
-      body {
-        padding: 10px;
-        align-items: flex-start;
-      }
+   @media (max-width: 720px) {
+  body {
+    padding: 10px;
+    align-items: flex-start;
+  }
 
-      .app {
-        padding: 16px;
-        border-radius: 18px;
-        max-width: 100%;
-      }
+  .app {
+    padding: 16px;
+    border-radius: 18px;
+    max-width: 100%;
+  }
 
-      .title-block h1 {
-        font-size: 1.3rem;
-      }
+  /* 🔹 Nuevo: encabezado en pila */
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 
-      .subtitle {
-        font-size: 0.8rem;
-      }
+  .title-block h1 {
+    font-size: 1.3rem;
+  }
 
-      .choice {
-        padding: 16px;
-      }
-    }
+  .subtitle {
+    font-size: 0.8rem;
+  }
+
+  /* 🔹 Nuevo: la pill queda debajo del texto */
+  .pill {
+    align-self: stretch;
+    text-align: center;
+  }
+
+  .choice {
+    padding: 16px;
+  }
+}
 
     @media (max-width: 520px) {
       .app {
@@ -385,7 +398,7 @@
 <div class="app">
   <div class="header">
     <div class="title-block">
-      <h1>Descuento temporal <span class="title-badge">Versión web</span></h1>
+      <h1>Descuento temporal <span class="title-badge">Versión gamificada</span></h1>
       <p class="subtitle">
         En la siguiente tarea se te presentarán una serie de alternativas, deberás elegir la opción que más
         prefieras para ganar premios. Las ganancias en la tarea son hipotéticas.
@@ -506,7 +519,7 @@
   // ------------------------------
   // CONFIGURACIÓN BÁSICA
   // ------------------------------
-  const DEMORAS = [5, 10, 20, 30, 60]; // segundos
+  const DEMORAS = [5, 15, 30, 60, 120]; // segundos
   const CANTIDAD_GRANDE = 16;
   const ENSAYOS_POR_DEMORA = 4;
 
