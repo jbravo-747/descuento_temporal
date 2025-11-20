@@ -584,6 +584,9 @@
   let conteoDemora   = { left: 0, right: 0 };
   let conteoDescuento = { inmediata: 0, demorada: 0 };
 
+  // Registro detallado de elecciones en tarea de descuento
+  let eleccionesDescuento = []; // {demora, ensayo, tipo}
+
   // Para calcular punto de indiferencia
   let ultimoAceptado = null;
   let ultimoRechazado = null;
@@ -701,6 +704,7 @@
     conteoMagnitud = { left: 0, right: 0 };
     conteoDemora   = { left: 0, right: 0 };
     conteoDescuento = { inmediata: 0, demorada: 0 };
+    eleccionesDescuento = [];
     ultimoAceptado = null;
     ultimoRechazado = null;
 
@@ -731,6 +735,7 @@
     conteoMagnitud = { left: 0, right: 0 };
     conteoDemora   = { left: 0, right: 0 };
     conteoDescuento = { inmediata: 0, demorada: 0 };
+    eleccionesDescuento = [];
     ultimoAceptado = null;
     ultimoRechazado = null;
 
@@ -959,6 +964,13 @@
     const demoraActual = DEMORAS[idxDemora];
     const valorAnterior = cantidadPequena;
 
+    // Registrar detalle de esta elección
+    eleccionesDescuento.push({
+      demora: demoraActual,
+      ensayo: ensayoActual,
+      tipo
+    });
+
     if (tipo === "inmediata") {
       ultimoAceptado = valorAnterior;
       conteoDescuento.inmediata++;
@@ -1120,6 +1132,35 @@
         <span class="value">Inmediata: ${conteoDescuento.inmediata} · Demorada: ${conteoDescuento.demorada}</span>
       </div>
     `;
+
+    // Detalle por demora y ensayo en la tarea de descuento
+    if (eleccionesDescuento.length) {
+      html += `
+        <div style="font-size:0.85rem; margin:10px 0 4px; border-top:1px dashed rgba(75,85,99,0.9); padding-top:6px;">
+          <strong>Detalle de elecciones en tarea de descuento:</strong>
+        </div>
+      `;
+
+      const agrupado = {};
+      eleccionesDescuento.forEach(e => {
+        if (!agrupado[e.demora]) agrupado[e.demora] = [];
+        agrupado[e.demora].push(e);
+      });
+
+      Object.keys(agrupado).sort((a, b) => Number(a) - Number(b)).forEach(d => {
+        const lista = agrupado[d]
+          .sort((a, b) => a.ensayo - b.ensayo)
+          .map(e => `E${e.ensayo}: ${e.tipo === "inmediata" ? "inmediata" : "demorada"}`)
+          .join(" · ");
+
+        html += `
+          <div>
+            <span class="delay">Demora ${d}s</span>
+            <span class="value">${lista}</span>
+          </div>
+        `;
+      });
+    }
 
     cont.innerHTML = html;
   }
