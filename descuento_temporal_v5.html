@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Descuento temporal - versión web</title>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a, #1d3557);
+      --card-bg: rgba(15, 23, 42, 0.9);
+      --accent: #cbd5f5;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --border-subtle: rgba(148, 163, 184, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+
+    .app {
+      width: 100%;
+      max-width: 900px;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 60%),
+                  radial-gradient(circle at bottom right, rgba(148, 163, 184, 0.12), transparent 55%),
+                  #020617;
+      border-radius: 24px;
+      box-shadow:
+        0 24px 60px rgba(15, 23, 42, 0.9),
+        0 0 0 1px rgba(148, 163, 184, 0.2);
+      padding: 24px 24px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .title-block h1 {
+      font-size: 1.6rem;
+      margin: 0;
+    }
+
+    .title-badge {
+      font-size: 0.8rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: var(--text-muted);
+      margin-left: 8px;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .pill strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid rgba(55, 65, 81, 0.9);
+      margin: 10px 0 18px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .progress-wrapper {
+      flex: 1;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .progress-bar {
+      position: relative;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6366f1, #a5b4fc);
+      box-shadow: 0 0 12px rgba(129, 140, 248, 0.9);
+      transition: width 0.3s ease;
+    }
+
+    .status-tag {
+      font-size: 0.8rem;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .status-tag span {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.2fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 16px 16px 18px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.95);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-header h2 {
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    .chip {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: var(--text-muted);
+    }
+
+    .muted {
+      color: var(--text-muted);
+    }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .choice {
+        border-radius: 12px;
+        padding: 18px;
+        background: #24324a; /* mismo color para todas las opciones */
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        cursor: pointer;
+        transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.15s ease, background 0.15s ease;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .choice:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.9);
+      border-color: rgba(255,255,255,0.35);
+      background: #2b3b55;
+    }
+
+    .choice-main {
+      font-size: 1.25rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .meta-row {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+
+    .btn-main {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(90deg, #4f46e5, #818cf8);
+      color: #e5e7eb;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 14px 30px rgba(79, 70, 229, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+    }
+
+    .btn-main:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 38px rgba(79, 70, 229, 0.5);
+      filter: brightness(1.03);
+    }
+
+    .btn-main.secondary {
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--text-muted);
+      box-shadow: none;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+    }
+
+    .btn-main.secondary:hover {
+      border-color: #e5e7eb;
+      color: #e5e7eb;
+    }
+
+    .log {
+      max-height: 260px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .log-entry {
+      font-size: 0.8rem;
+      padding: 6px 8px;
+      border-radius: 10px;
+      margin-bottom: 4px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(55, 65, 81, 0.8);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .log-entry span.label {
+      color: var(--text-muted);
+    }
+
+    .log-entry span.value {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    .log-entry span.badge {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: var(--text-muted);
+    }
+
+    .results-list {
+      font-size: 0.85rem;
+      margin-top: 10px;
+      border-top: 1px dashed rgba(75, 85, 99, 0.9);
+      padding-top: 8px;
+    }
+
+    .results-list div {
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .results-list span.delay {
+      color: var(--text-muted);
+    }
+
+    .results-list span.value {
+      color: #facc15;
+      font-weight: 600;
+    }
+
+    .emoji-strip {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      margin-top: 6px;
+      color: var(--text-muted);
+    }
+
+    /* RESPONSIVO */
+    @media (max-width: 720px) {
+      body {
+        padding: 10px;
+        align-items: flex-start;
+      }
+
+      .app {
+        padding: 16px;
+        border-radius: 18px;
+        max-width: 100%;
+      }
+
+      .title-block h1 {
+        font-size: 1.3rem;
+      }
+
+      .subtitle {
+        font-size: 0.8rem;
+      }
+
+      .choice {
+        padding: 16px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .app {
+        padding: 12px;
+        border-radius: 0;
+      }
+
+      .content {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .choice-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .choice-main {
+        font-size: 1.1rem;
+      }
+
+      .card {
+        padding: 12px 12px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <div class="title-block">
+      <h1>Descuento temporal <span class="title-badge">Versión web</span></h1>
+      <p class="subtitle">
+        En la siguiente tarea se te presentarán una serie de alternativas, deberás elegir la opción que más
+        prefieras para ganar premios. Las ganancias en la tarea son hipotéticas.
+      </p>
+    </div>
+    <div class="pill">
+      Basado en tarea de descuento temporal • <strong>16 premios estándar</strong>
+    </div>
+  </div>
+
+  <hr />
+
+  <div class="top-bar">
+    <div class="progress-wrapper">
+      <div class="progress-label">
+        <span>Progreso (solo tarea de descuento)</span>
+        <span id="progressText" class="muted">0 / 5 demoras</span>
+      </div>
+      <div class="progress-bar">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+    </div>
+    <div class="status-tag">
+      Fase actual:
+      <span id="statusMode">Exploración</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- PANEL PRINCIPAL -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Elección actual</h2>
+        <span class="chip" id="chipInfo">Demora: –</span>
+      </div>
+
+      <p class="muted" id="descripcionFase" style="font-size:0.8rem; margin-bottom:8px;">
+        Haz clic en la opción que prefieras.
+      </p>
+
+      <div id="panelJuego">
+        <!-- Aquí se inyectan las tarjetas -->
+      </div>
+
+      <button class="btn-main" id="btnIniciar" onclick="iniciarExperimento()">
+        ▶ Iniciar experimento
+      </button>
+    </div>
+
+    <!-- PANEL LATERAL -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Resumen & Log</h2>
+        <span class="chip">Ensayos y resultados</span>
+      </div>
+
+      <div class="log" id="logPanel">
+        <div class="log-entry">
+          <span class="label">Estado</span>
+          <span class="value">Esperando a iniciar ▶</span>
+          <span class="badge">info</span>
+        </div>
+      </div>
+
+      <div id="resultsPanel" class="results-list"></div>
+
+      <button class="btn-main secondary" onclick="reiniciar()">
+        🔁 Reiniciar experimento
+      </button>
+      <div class="emoji-strip" id="emojiStrip">
+        Empieza a elegir para ver tus resultados…
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER DISCLAIMER -->
+<footer style="
+  width: 100%;
+  max-width: 900px;
+  margin-top: 30px;
+  padding: 16px 20px 10px;
+  font-size: 0.75rem;
+  color: #c7cbd5;
+  text-align: center;
+  line-height: 1.4;
+  border-top: 1px solid rgba(148,163,184,0.25);
+  opacity: 0.85;
+">
+  <p style="margin-bottom: 10px;">
+    <strong>Disclaimer:</strong><br>
+    El uso de esta herramienta es exclusivamente para fines académicos.
+    Queda estrictamente prohibido su uso con fines lucrativos y/o cualquier otro fin no autorizado,
+    así como la reproducción parcial o total del mismo sin autorización explícita.
+  </p>
+
+  <p style="margin-bottom: 10px;">
+    La tarea está basada en el estudio realizado por Gómez-Escobar et al. (2019).<br>
+    <em>Referencia:</em> Escobar, G. G., López Fuentes, A. L., Morales Chainé, S., & García Gómez, R. E. (2019).
+    <em>Descuento temporal de recompensas y demoras reales e hipotéticas mediante un videojuego.</em>
+    Mexican Journal of Behavior Analysis, 45(1).
+    <a href="https://doi.org/10.5514/rmac.v45.i1.70867" target="_blank" style="color:#9bb2ff;">
+      https://doi.org/10.5514/rmac.v45.i1.70867
+    </a>
+  </p>
+
+  <p style="margin-bottom: 6px;">
+    <strong>Docente:</strong> M. en C. Paulina Torres Carrillo<br>
+    <strong>Desarrollador:</strong> Ing. Joel E. Bravo Guadarrama<br>
+    <strong>Correo de contacto:</strong>
+    <a href="mailto:pau.toca13@gmail.com" style="color:#9bb2ff;">pau.toca13@gmail.com</a>
+  </p>
+
+  <p>2025</p>
+</footer>
+
+<script>
+  // ------------------------------
+  // CONFIGURACIÓN BÁSICA
+  // ------------------------------
+  const DEMORAS = [5, 15, 30, 60, 120]; // segundos
+  const CANTIDAD_GRANDE = 16;
+  const ENSAYOS_POR_DEMORA = 4;
+
+  // Ensayos de prueba
+  const FORCED_TRIALS = [
+    {
+      id: 1,
+      smallAmount: 1,
+      largeAmount: 10,
+      smallDelay: 0,
+      largeDelay: 3,
+      texto: "Ensayo de prueba 1."
+    },
+    {
+      id: 2,
+      smallAmount: 1,
+      largeAmount: 10,
+      smallDelay: 0,
+      largeDelay: 3,
+      texto: "Ensayo de prueba 2."
+    }
+  ];
+
+  // Prueba de magnitud
+  const MAGNITUDE_TRIALS = [
+    {
+      id: 1,
+      left: { amount: 6, delay: 0 },
+      right: { amount: 12, delay: 0 },
+      texto: "Prueba de magnitud 1."
+    },
+    {
+      id: 2,
+      left: { amount: 12, delay: 8 },
+      right: { amount: 6, delay: 8 },
+      texto: "Prueba de magnitud 2."
+    }
+  ];
+
+  // Prueba de demora
+  const DELAY_TRIALS = [
+    {
+      id: 1,
+      left: { amount: 15, delay: 10 },
+      right: { amount: 15, delay: 0 },
+      texto: "Prueba de demora 1."
+    },
+    {
+      id: 2,
+      left: { amount: 10, delay: 8 },
+      right: { amount: 10, delay: 0 },
+      texto: "Prueba de demora 2."
+    }
+  ];
+
+  // Estado del experimento
+  let fase = "idle"; // 'forced' | 'magnitude' | 'delay' | 'discount' | 'finished'
+  let idxForced = 0;
+  let idxMagnitude = 0;
+  let idxDelay = 0;
+
+  let idxDemora = 0;
+  let ensayoActual = 1;
+  let cantidadPequena = CANTIDAD_GRANDE / 2;
+  let resultados = [];
+
+  // Resultados adicionales
+  let forcedResults = [];
+  let magnitudeResults = [];
+  let delayResults = [];
+
+  // Para calcular punto de indiferencia
+  let ultimoAceptado = null;
+  let ultimoRechazado = null;
+
+  let experimentoIniciado = false;
+
+  // ------------------------------
+  // UTILIDADES UI
+  // ------------------------------
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function log(mensaje, tipo = "info") {
+    const logPanel = $("logPanel");
+    const div = document.createElement("div");
+    div.className = "log-entry";
+
+    const label = document.createElement("span");
+    label.className = "label";
+    label.textContent = mensaje;
+
+    const value = document.createElement("span");
+    value.className = "value";
+    value.textContent = "";
+
+    const badge = document.createElement("span");
+    badge.className = "badge";
+    badge.textContent = tipo;
+
+    div.appendChild(label);
+    div.appendChild(value);
+    div.appendChild(badge);
+
+    logPanel.insertBefore(div, logPanel.firstChild);
+  }
+
+  function actualizarProgreso() {
+    const total = DEMORAS.length;
+    const completadas = idxDemora;
+    const porcentaje = (completadas / total) * 100;
+    $("progressFill").style.width = `${porcentaje}%`;
+    $("progressText").textContent = `${completadas} / ${total} demoras`;
+  }
+
+  function actualizarChipInfo() {
+    const chip = $("chipInfo");
+    const desc = $("descripcionFase");
+
+    if (!experimentoIniciado) {
+      chip.textContent = "Demora: –";
+      return;
+    }
+
+    if (fase === "forced") {
+      chip.textContent = `Ensayos de prueba: ${idxForced + 1}/${FORCED_TRIALS.length}`;
+      desc.textContent = FORCED_TRIALS[idxForced].texto;
+    } else if (fase === "magnitude") {
+      chip.textContent = `Prueba de magnitud: ${idxMagnitude + 1}/${MAGNITUDE_TRIALS.length}`;
+      desc.textContent = MAGNITUDE_TRIALS[idxMagnitude].texto;
+    } else if (fase === "delay") {
+      chip.textContent = `Prueba de demora: ${idxDelay + 1}/${DELAY_TRIALS.length}`;
+      desc.textContent = DELAY_TRIALS[idxDelay].texto;
+    } else if (fase === "discount") {
+      const demoraActual = DEMORAS[idxDemora];
+      chip.textContent = `Demora: ${demoraActual} s • Ensayo ${ensayoActual}/${ENSAYOS_POR_DEMORA}`;
+      desc.textContent = "Haz clic en la opción que prefieras.";
+    } else if (fase === "finished") {
+      chip.textContent = "Experimento completado";
+      desc.textContent = "Revisa el resumen de tus elecciones.";
+    }
+  }
+
+  function actualizarStatus(texto) {
+    $("statusMode").textContent = texto;
+  }
+
+  function actualizarEmojiStrip(estado) {
+    const strip = $("emojiStrip");
+    if (estado === "inicio") {
+      strip.textContent = "Comenzamos con los ensayos de prueba.";
+    } else if (estado === "forced") {
+      strip.textContent = "Ensayos de prueba: primero contacta las opciones.";
+    } else if (estado === "magnitude") {
+      strip.textContent = "Prueba de magnitud: misma demora, diferentes cantidades.";
+    } else if (estado === "delay") {
+      strip.textContent = "Prueba de demora: misma cantidad, diferentes tiempos.";
+    } else if (estado === "discount") {
+      strip.textContent = "Tarea principal de descuento: observa cómo cambia la cantidad inmediata.";
+    } else if (estado === "fin") {
+      strip.textContent = "Experimento completado. Observa tus patrones de elección.";
+    } else {
+      strip.textContent = "Empieza a elegir para ver tus resultados…";
+    }
+  }
+
+  // ------------------------------
+  // INICIO / REINICIO
+  // ------------------------------
+  function iniciarExperimento() {
+    experimentoIniciado = true;
+    fase = "forced";
+    idxForced = 0;
+    idxMagnitude = 0;
+    idxDelay = 0;
+
+    idxDemora = 0;
+    ensayoActual = 1;
+    cantidadPequena = CANTIDAD_GRANDE / 2;
+    resultados = [];
+    forcedResults = [];
+    magnitudeResults = [];
+    delayResults = [];
+    ultimoAceptado = null;
+    ultimoRechazado = null;
+
+    $("btnIniciar").style.display = "none";
+    actualizarChipInfo();
+    actualizarStatus("Ensayos de prueba");
+    actualizarEmojiStrip("forced");
+    actualizarProgreso();
+    log("Experimento iniciado. Comenzando con ensayos de prueba.", "info");
+
+    renderEstado();
+  }
+
+  function reiniciar() {
+    experimentoIniciado = false;
+    fase = "idle";
+    idxForced = 0;
+    idxMagnitude = 0;
+    idxDelay = 0;
+    idxDemora = 0;
+    ensayoActual = 1;
+    cantidadPequena = CANTIDAD_GRANDE / 2;
+    resultados = [];
+    forcedResults = [];
+    magnitudeResults = [];
+    delayResults = [];
+    ultimoAceptado = null;
+    ultimoRechazado = null;
+
+    $("panelJuego").innerHTML = "";
+    $("btnIniciar").style.display = "block";
+    $("resultsPanel").innerHTML = "";
+    $("logPanel").innerHTML = `
+      <div class="log-entry">
+        <span class="label">Estado</span>
+        <span class="value">Esperando a iniciar ▶</span>
+        <span class="badge">info</span>
+      </div>
+    `;
+    $("descripcionFase").textContent = "Haz clic en la opción que prefieras.";
+    actualizarChipInfo();
+    actualizarStatus("Exploración");
+    actualizarEmojiStrip("default");
+    $("progressFill").style.width = "0%";
+    $("progressText").textContent = "0 / 5 demoras";
+  }
+
+  // ------------------------------
+  // RENDER GENERAL POR FASE
+  // ------------------------------
+  function renderEstado() {
+    if (fase === "forced") {
+      renderEnsayoForzado();
+    } else if (fase === "magnitude") {
+      renderEnsayoMagnitud();
+    } else if (fase === "delay") {
+      renderEnsayoDemora();
+    } else if (fase === "discount") {
+      renderEnsayoDescuento();
+    }
+    actualizarChipInfo();
+  }
+
+  // ------------------------------
+  // ENSAYOS DE PRUEBA
+  // ------------------------------
+  function renderEnsayoForzado() {
+    const t = FORCED_TRIALS[idxForced];
+    const panel = $("panelJuego");
+
+    panel.innerHTML = `
+      <div class="choice-grid">
+        <div class="choice" onclick="elegirOpcionForzada('small')">
+          <div class="choice-main">Ganar ${t.smallAmount} premios ahora</div>
+        </div>
+        <div class="choice" onclick="elegirOpcionForzada('large')">
+          <div class="choice-main">Ganar ${t.largeAmount} premios en ${t.largeDelay} segundos</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function elegirOpcionForzada(tipo) {
+    const t = FORCED_TRIALS[idxForced];
+    forcedResults.push({
+      trialId: t.id,
+      choice: tipo
+    });
+
+    log(
+      `Ensayo de prueba ${t.id}: se registró la elección.`,
+      "prueba"
+    );
+
+    idxForced++;
+    if (idxForced < FORCED_TRIALS.length) {
+      renderEnsayoForzado();
+    } else {
+      fase = "magnitude";
+      actualizarStatus("Prueba de magnitud");
+      actualizarEmojiStrip("magnitude");
+      renderEstado();
+    }
+  }
+
+  // ------------------------------
+  // PRUEBA DE MAGNITUD
+  // ------------------------------
+  function renderEnsayoMagnitud() {
+    const t = MAGNITUDE_TRIALS[idxMagnitude];
+    const panel = $("panelJuego");
+
+    panel.innerHTML = `
+      <div class="choice-grid">
+        <div class="choice" onclick="elegirOpcionMagnitud('left')">
+          <div class="choice-main">
+            Ganar ${t.left.amount} premios en ${t.left.delay === 0 ? "0 segundos" : t.left.delay + " segundos"}
+          </div>
+        </div>
+
+        <div class="choice" onclick="elegirOpcionMagnitud('right')">
+          <div class="choice-main">
+            Ganar ${t.right.amount} premios en ${t.right.delay === 0 ? "0 segundos" : t.right.delay + " segundos"}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function elegirOpcionMagnitud(lado) {
+    const t = MAGNITUDE_TRIALS[idxMagnitude];
+    magnitudeResults.push({
+      trialId: t.id,
+      choice: lado,
+      chosenAmount: lado === "left" ? t.left.amount : t.right.amount
+    });
+
+    log(
+      `Prueba de magnitud ${t.id}: se registró la elección.`,
+      "magnitud"
+    );
+
+    idxMagnitude++;
+    if (idxMagnitude < MAGNITUDE_TRIALS.length) {
+      renderEnsayoMagnitud();
+    } else {
+      fase = "delay";
+      actualizarStatus("Prueba de demora");
+      actualizarEmojiStrip("delay");
+      renderEstado();
+    }
+  }
+
+  // ------------------------------
+  // PRUEBA DE DEMORA
+  // ------------------------------
+  function renderEnsayoDemora() {
+    const t = DELAY_TRIALS[idxDelay];
+    const panel = $("panelJuego");
+
+    panel.innerHTML = `
+      <div class="choice-grid">
+        <div class="choice" onclick="elegirOpcionDemora('left')">
+          <div class="choice-main">
+            Ganar ${t.left.amount} premios en ${t.left.delay === 0 ? "0 segundos" : t.left.delay + " segundos"}
+          </div>
+        </div>
+
+        <div class="choice" onclick="elegirOpcionDemora('right')">
+          <div class="choice-main">
+            Ganar ${t.right.amount} premios en ${t.right.delay === 0 ? "0 segundos" : t.right.delay + " segundos"}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function elegirOpcionDemora(lado) {
+    const t = DELAY_TRIALS[idxDelay];
+    const chosenDelay = lado === "left" ? t.left.delay : t.right.delay;
+
+    delayResults.push({
+      trialId: t.id,
+      choice: lado,
+      chosenDelay
+    });
+
+    log(
+      `Prueba de demora ${t.id}: se registró la elección.`,
+      "demora"
+    );
+
+    idxDelay++;
+    if (idxDelay < DELAY_TRIALS.length) {
+      renderEnsayoDemora();
+    } else {
+      fase = "discount";
+      actualizarStatus("Tarea principal de descuento");
+      actualizarEmojiStrip("discount");
+      ensayoActual = 1;
+      idxDemora = 0;
+      cantidadPequena = CANTIDAD_GRANDE / 2;
+      ultimoAceptado = null;
+      ultimoRechazado = null;
+      log("Inicia la tarea principal de descuento temporal.", "info");
+      renderEstado();
+    }
+  }
+
+  // ------------------------------
+  // TAREA PRINCIPAL: DESCUENTO TEMPORAL
+  // ------------------------------
+  function renderEnsayoDescuento() {
+    const demoraActual = DEMORAS[idxDemora];
+    const panel = $("panelJuego");
+
+    panel.innerHTML = `
+      <div class="choice-grid">
+        <div class="choice" onclick="elegirOpcionDescuento('inmediata')">
+          <div class="choice-main">
+            Ganar ${cantidadPequena.toFixed(2)} premios ahora
+          </div>
+        </div>
+
+        <div class="choice" onclick="elegirOpcionDescuento('demorada')">
+          <div class="choice-main">
+            Ganar ${CANTIDAD_GRANDE} premios en ${demoraActual} segundos
+          </div>
+        </div>
+      </div>
+
+      <div class="meta-row">
+        <span>Demora actual: <strong>${demoraActual}s</strong></span>
+        <span>Ensayo: <strong>${ensayoActual}/${ENSAYOS_POR_DEMORA}</strong></span>
+      </div>
+    `;
+
+    actualizarChipInfo();
+  }
+
+  function elegirOpcionDescuento(tipo) {
+    const demoraActual = DEMORAS[idxDemora];
+    const valorAnterior = cantidadPequena;
+
+    if (tipo === "inmediata") {
+      ultimoAceptado = valorAnterior;
+      log(`Descuento: elección registrada en demora ${demoraActual}s.`, "elección");
+      cantidadPequena = valorAnterior - valorAnterior / 2;
+    } else {
+      ultimoRechazado = valorAnterior;
+      log(`Descuento: elección registrada en demora ${demoraActual}s.`, "elección");
+      cantidadPequena = valorAnterior + valorAnterior / 2;
+    }
+
+    ensayoActual++;
+
+    if (ensayoActual <= ENSAYOS_POR_DEMORA) {
+      renderEnsayoDescuento();
+    } else {
+      cerrarDemora();
+    }
+  }
+
+  // ------------------------------
+  // CIERRE DE UN NIVEL DE DEMORA
+  // ------------------------------
+  function cerrarDemora() {
+    const demoraActual = DEMORAS[idxDemora];
+
+    let punto;
+    if (ultimoAceptado !== null && ultimoRechazado !== null) {
+      punto = (ultimoAceptado + ultimoRechazado) / 2;
+    } else {
+      punto = cantidadPequena;
+    }
+
+    resultados.push({
+      demora: demoraActual,
+      puntoIndiferencia: punto
+    });
+
+    log(
+      `Demora ${demoraActual}s finalizada. Punto de indiferencia ≈ ${punto.toFixed(2)}.`,
+      "resultado"
+    );
+
+    idxDemora++;
+    actualizarProgreso();
+
+    if (idxDemora < DEMORAS.length) {
+      ensayoActual = 1;
+      cantidadPequena = CANTIDAD_GRANDE / 2;
+      ultimoAceptado = null;
+      ultimoRechazado = null;
+      actualizarStatus("Tarea principal de descuento");
+      renderEnsayoDescuento();
+    } else {
+      finalizarExperimento();
+    }
+  }
+
+  // ------------------------------
+  // FINAL DEL EXPERIMENTO
+  // ------------------------------
+  function finalizarExperimento() {
+    fase = "finished";
+    actualizarStatus("Completado");
+    actualizarEmojiStrip("fin");
+    actualizarProgreso();
+
+    $("panelJuego").innerHTML = `
+      <p class="muted" style="font-size:0.9rem;">
+        Has completado todas las fases: ensayos de prueba, prueba de magnitud, prueba de demora y tarea de descuento temporal.
+        Abajo puedes ver un resumen general.
+      </p>
+    `;
+    mostrarResultados();
+    actualizarChipInfo();
+  }
+
+  function mostrarResultados() {
+    const cont = $("resultsPanel");
+    let html = "";
+
+    if (forcedResults.length) {
+      html += `<div style="font-size:0.85rem; margin-bottom:4px;">
+        <strong>Ensayos de prueba:</strong>
+      </div>`;
+      forcedResults.forEach(r => {
+        html += `
+          <div>
+            <span class="delay">Ensayo ${r.trialId}</span>
+            <span class="value">Elección registrada</span>
+          </div>
+        `;
+      });
+    }
+
+    if (magnitudeResults.length) {
+      html += `<div style="font-size:0.85rem; margin:8px 0 4px;">
+        <strong>Prueba de magnitud:</strong>
+      </div>`;
+      magnitudeResults.forEach(r => {
+        html += `
+          <div>
+            <span class="delay">Ensayo ${r.trialId}</span>
+            <span class="value">${r.chosenAmount} premios</span>
+          </div>
+        `;
+      });
+    }
+
+    if (delayResults.length) {
+      html += `<div style="font-size:0.85rem; margin:8px 0 4px;">
+        <strong>Prueba de demora:</strong>
+      </div>`;
+      delayResults.forEach(r => {
+        html += `
+          <div>
+            <span class="delay">Ensayo ${r.trialId}</span>
+            <span class="value">${r.chosenDelay === 0 ? "0s (ahora)" : r.chosenDelay + "s"}</span>
+          </div>
+        `;
+      });
+    }
+
+    if (resultados.length) {
+      html += `<div style="font-size:0.85rem; margin:8px 0 4px;">
+        <strong>Puntos de indiferencia (tarea de descuento):</strong>
+      </div>`;
+
+      resultados.forEach(r => {
+        html += `
+          <div>
+            <span class="delay">Demora ${r.demora}s</span>
+            <span class="value">${r.puntoIndiferencia.toFixed(2)} premios</span>
+          </div>
+        `;
+      });
+    }
+
+    cont.innerHTML = html;
+  }
+</script>
+
+</body>
+</html>
