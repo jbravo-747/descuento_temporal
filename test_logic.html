@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Logic Test Fixed</title>
+</head>
+
+<body>
+    <div id="output"></div>
+    <script>
+        const CANTIDAD_GRANDE = 16;
+        const ENSAYOS_POR_DEMORA = 4;
+
+        function simulatePath(choices) {
+            let cantidadPequena = CANTIDAD_GRANDE / 2; // 8
+            let stepSize = 4;
+            let log = [];
+
+            for (let i = 0; i < ENSAYOS_POR_DEMORA; i++) {
+                let choice = choices[i]; // 'inmediata' or 'demorada'
+                let valorAnterior = cantidadPequena;
+
+                log.push({ trial: i + 1, offer: valorAnterior, choice: choice, step: stepSize });
+
+                if (choice === 'inmediata') {
+                    cantidadPequena = valorAnterior - stepSize;
+                } else {
+                    cantidadPequena = valorAnterior + stepSize;
+                }
+                stepSize = stepSize / 2;
+            }
+            return { finalOffer: cantidadPequena, log: log };
+        }
+
+        // Generate all 2^4 = 16 paths
+        let paths = [];
+        function generatePaths(currentPath) {
+            if (currentPath.length === ENSAYOS_POR_DEMORA) {
+                paths.push(currentPath);
+                return;
+            }
+            generatePaths([...currentPath, 'inmediata']);
+            generatePaths([...currentPath, 'demorada']);
+        }
+        generatePaths([]);
+
+        let results = [];
+        let anomalies = [];
+
+        paths.forEach(p => {
+            let res = simulatePath(p);
+            results.push(res);
+
+            // Check for anomalies
+            let lastOffer = res.log[res.log.length - 1].offer;
+
+            // 1. Check bounds [0, 16]
+            if (lastOffer > CANTIDAD_GRANDE || lastOffer < 0) {
+                anomalies.push({ type: "OutOfBounds", path: p, val: lastOffer });
+            }
+
+            // 2. Check specific problematic path from before: Del, Del, Del, Del
+            // Should be: 8 -> 12 -> 14 -> 15 -> 15.5 (Next)
+        });
+
+        const output = document.getElementById('output');
+        output.innerHTML = `
+            <h2>Simulation Results (Fixed Algorithm)</h2>
+            <p>Total Paths: ${paths.length}</p>
+            <p>Anomalies Found: ${anomalies.length}</p>
+            <pre>${JSON.stringify(anomalies, null, 2)}</pre>
+            <h3>Full Logs</h3>
+            <pre>${JSON.stringify(results, null, 2)}</pre>
+        `;
+    </script>
+</body>
+
+</html>
