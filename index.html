@@ -1037,27 +1037,39 @@
       actualizarEmojiStrip("fin");
       actualizarProgreso();
 
+      const htmlResultados = generarHTMLResultados();
+
       $("panelJuego").innerHTML = `
-      <p class="muted" style="font-size:0.9rem;">
-        Has completado todas las fases: ensayos de prueba, prueba de magnitud, prueba de demora y tarea de descuento temporal.
-        Abajo puedes ver un resumen general.
-      </p>
+      <div style="padding: 0 4px;">
+        <p class="muted" style="font-size:0.9rem; margin-bottom:16px;">
+          Has completado todas las fases: ensayos de prueba, prueba de magnitud, prueba de demora y tarea de descuento temporal.
+          Aquí tienes el resumen detallado de tus elecciones:
+        </p>
+        <div class="results-list" style="border-top:none; padding-top:0;">
+          ${htmlResultados}
+        </div>
+      </div>
     `;
-      mostrarResultados();
+
+      // Limpiar panel lateral de resultados por si acaso
+      $("resultsPanel").innerHTML = "";
+
+      // Expandir el log para ocupar más espacio
+      $("logPanel").style.maxHeight = "500px";
+
       actualizarChipInfo();
     }
 
-    function mostrarResultados() {
-      const cont = $("resultsPanel");
+    function generarHTMLResultados() {
       let html = "";
 
       if (forcedResults.length) {
-        html += `<div style="font-size:0.85rem; margin-bottom:4px;">
+        html += `<div style="font-size:0.9rem; margin-bottom:6px; color:var(--text-main);">
         <strong>Ensayos de prueba:</strong>
       </div>`;
         forcedResults.forEach(r => {
           html += `
-          <div>
+          <div style="padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.03);">
             <span class="delay">Ensayo ${r.trialId}</span>
             <span class="value">Elección registrada</span>
           </div>
@@ -1066,12 +1078,12 @@
       }
 
       if (magnitudeResults.length) {
-        html += `<div style="font-size:0.85rem; margin:8px 0 4px;">
+        html += `<div style="font-size:0.9rem; margin:16px 0 6px; color:var(--text-main);">
         <strong>Prueba de magnitud:</strong>
       </div>`;
         magnitudeResults.forEach(r => {
           html += `
-          <div>
+          <div style="padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.03);">
             <span class="delay">Ensayo ${r.trialId}</span>
             <span class="value">${r.chosenAmount} premios</span>
           </div>
@@ -1080,12 +1092,12 @@
       }
 
       if (delayResults.length) {
-        html += `<div style="font-size:0.85rem; margin:8px 0 4px;">
+        html += `<div style="font-size:0.9rem; margin:16px 0 6px; color:var(--text-main);">
         <strong>Prueba de demora:</strong>
       </div>`;
         delayResults.forEach(r => {
           html += `
-          <div>
+          <div style="padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.03);">
             <span class="delay">Ensayo ${r.trialId}</span>
             <span class="value">${r.chosenDelay === 0 ? "0s (ahora)" : r.chosenDelay + "s"}</span>
           </div>
@@ -1094,13 +1106,13 @@
       }
 
       if (resultados.length) {
-        html += `<div style="font-size:0.85rem; margin:8px 0 4px;">
+        html += `<div style="font-size:0.9rem; margin:16px 0 6px; color:var(--text-main);">
         <strong>Puntos de indiferencia (tarea de descuento):</strong>
       </div>`;
 
         resultados.forEach(r => {
           html += `
-          <div>
+          <div style="padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.03);">
             <span class="delay">Demora ${r.demora}s</span>
             <span class="value">${r.puntoIndiferencia.toFixed(2)} premios</span>
           </div>
@@ -1110,28 +1122,30 @@
 
       // Resumen de conteos
       html += `
-      <div style="font-size:0.85rem; margin:10px 0 4px; border-top:1px dashed rgba(154, 140, 152, 0.3); padding-top:6px;">
+      <div style="font-size:0.9rem; margin:20px 0 6px; border-top:1px dashed rgba(154, 140, 152, 0.3); padding-top:12px; color:var(--text-main);">
         <strong>Resumen de elecciones:</strong>
       </div>
-      <div>
-        <span class="delay">Ensayos de prueba</span>
-        <span class="value">Pequeña: ${conteoPrueba.small} · Grande: ${conteoPrueba.large}</span>
-      </div>
-      <div>
-        <span class="delay">Prueba de magnitud</span>
-        <span class="value">Izquierda: ${conteoMagnitud.left} · Derecha: ${conteoMagnitud.right}</span>
-      </div>
-      <div>
-        <span class="delay">Prueba de demora</span>
-        <span class="value">Izquierda: ${conteoDemora.left} · Derecha: ${conteoDemora.right}</span>
-      </div>
-      <div>
-        <span class="delay">Tarea de descuento</span>
-        <span class="value">Inmediata: ${conteoDescuento.inmediata} · Demorada: ${conteoDescuento.demorada}</span>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+        <div>
+          <span class="delay">Ensayos de prueba</span><br>
+          <span class="value">Pequeña: ${conteoPrueba.small} · Grande: ${conteoPrueba.large}</span>
+        </div>
+        <div>
+          <span class="delay">Prueba de magnitud</span><br>
+          <span class="value">Izq: ${conteoMagnitud.left} · Der: ${conteoMagnitud.right}</span>
+        </div>
+        <div>
+          <span class="delay">Prueba de demora</span><br>
+          <span class="value">Izq: ${conteoDemora.left} · Der: ${conteoDemora.right}</span>
+        </div>
+        <div>
+          <span class="delay">Tarea de descuento</span><br>
+          <span class="value">Inmediata: ${conteoDescuento.inmediata} · Demorada: ${conteoDescuento.demorada}</span>
+        </div>
       </div>
     `;
 
-      cont.innerHTML = html;
+      return html;
     }
   </script>
 
